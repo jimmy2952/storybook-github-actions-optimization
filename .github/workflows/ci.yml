@@ -29,7 +29,19 @@ jobs:
     - if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
       name: Install dependencies
       run: pnpm install --frozen-lockfile
+    - name: Get installed Playwright version
+      id: playwright-version
+      run: echo "version=$(pnpx playwright --version | sed 's/Version //')" >> $GITHUB_OUTPUT
+    - name: Cache playwright
+      id: cache-playwright
+      uses: actions/cache@v4
+      with:
+        path: '~/.cache/ms-playwright'
+        key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
+        restore-keys: |
+          ${{ runner.os }}-playwright-
     - name: Install Playwright
+      if: steps.cache-playwright.outputs.cache-hit != 'true'
       run: pnpx playwright install chromium --with-deps
     - name: Build Storybook
       run: pnpm build-storybook --quiet
