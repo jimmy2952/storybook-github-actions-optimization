@@ -43,7 +43,16 @@ jobs:
     - name: Install Playwright
       if: steps.cache-playwright.outputs.cache-hit != 'true'
       run: pnpx playwright install chromium --with-deps
+    - name: Cache Storybook
+      id: cache-storybook
+      uses: actions/cache@v4
+      with:
+        path: storybook-static
+        key: ${{ runner.os }}-storybook-${{ hashFiles('src/stories') }}
+        restore-keys: |
+          ${{ runner.os }}-storybook-
     - name: Build Storybook
+      if: steps.cache-storybook.outputs.cache-hit != 'true'
       run: pnpm build-storybook --quiet
     - name: Serve Storybook and run tests
       run: |
